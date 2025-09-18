@@ -23,6 +23,8 @@ expo-env.d.ts
 # Firebase credentials (avoid committing secrets)
 **/google-services.json
 **/GoogleService-Info.plist
+/google-services.json
+/GoogleService-Info.plist
 firebase-debug.log
 
 # Metro

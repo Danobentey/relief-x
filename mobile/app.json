@@ -32,6 +32,13 @@
     "extra": {
       "firebase": {
         "usesWebSdk": true
+      },
+      "eas": {
+        "projectId": "replace-with-eas-project-id"
+      },
+      "config": {
+        "iosGoogleServicesFile": "./GoogleService-Info.plist",
+        "androidGoogleServicesFile": "./google-services.json"
       }
     }
   }
