@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function getUser(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
+    // Fixed entitlement logic
+    function isEntitled(uid) {
+      return isSignedIn() && (getUser(uid).data.subscriptionStatus in ['active', 'trial', 'grace']);
+    }
+
+    // USERS
+    match /users/{userId} {
+      allow create: if isOwner(userId);
+      allow read, update: if isOwner(userId);
+      allow delete: if false; // never allow client delete
+
+      // Subcollections
+      match /painLogs/{logId} {
+        allow create: if isOwner(userId) && isValidPainLog();
+        allow read: if isOwner(userId);
+        allow update: if isOwner(userId) && isValidPainLog();
+        allow delete: if isOwner(userId);
+
+        function isValidPainLog() {
+          return request.resource.data.keys().hasOnly(['date','score','createdAt','updatedAt'])
+            && request.resource.data.keys().hasAll(['date','score'])
+            && request.resource.data.date is string
+            && request.resource.data.score is int
+            && request.resource.data.score >= 1 && request.resource.data.score <= 10;
+        }
+      }
+
+      match /videoCompletions/{videoId} {
+        allow create, read, update: if isOwner(userId) && isValidCompletion();
+        allow delete: if isOwner(userId);
+
+        function isValidCompletion() {
+          return request.resource.data.keys().hasOnly(['completedAt','lastPositionSec','createdAt','updatedAt'])
+            && request.resource.data.keys().hasAll(['lastPositionSec'])
+            && (request.resource.data.lastPositionSec is int || request.resource.data.lastPositionSec is float)
+            && request.resource.data.lastPositionSec >= 0;
+        }
+      }
+    }
+
+    // Public video metadata with premium gating per document
+    match /videos/{videoId} {
+      allow read: if !resource.data.isPremium || isEntitled(request.auth.uid);
+      allow list: if isSignedIn(); // listing allowed for signed in; client filters premium access by isPremium + entitlement
+      allow write: if false; // only via backend tooling / admin
+    }
+
+    // App configs (read-only)
+    match /appConfigs/{configId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
