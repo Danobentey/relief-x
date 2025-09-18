@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { track } from '../analytics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface OnboardingState {
   painAreas: string[];
   answers: Record<string, string>;
   completed: boolean;
+  hydrated?: boolean;
 }
 
 interface OnboardingContextValue extends OnboardingState {
@@ -17,7 +19,29 @@ interface OnboardingContextValue extends OnboardingState {
 const OnboardingContext = createContext<OnboardingContextValue | undefined>(undefined);
 
 export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<OnboardingState>({ painAreas: [], answers: {}, completed: false });
+  const [state, setState] = useState<OnboardingState>({ painAreas: [], answers: {}, completed: false, hydrated: false });
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem('onboarding_state');
+        if (raw) {
+          const parsed = JSON.parse(raw) as OnboardingState;
+          setState({ ...parsed, hydrated: true });
+        } else {
+          setState(s => ({ ...s, hydrated: true }));
+        }
+      } catch {
+        setState(s => ({ ...s, hydrated: true }));
+      }
+    })();
+  }, []);
+
+  React.useEffect(() => {
+    if (!state.hydrated) return;
+    const toPersist = { painAreas: state.painAreas, answers: state.answers, completed: state.completed };
+    AsyncStorage.setItem('onboarding_state', JSON.stringify(toPersist)).catch(() => {});
+  }, [state.painAreas, state.answers, state.completed, state.hydrated]);
 
   const setPainAreas = useCallback((areas: string[]) => {
     setState(prev => ({ ...prev, painAreas: areas }));
