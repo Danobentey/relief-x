@@ -15,6 +15,7 @@ import Questionnaire2Screen from './src/screens/Questionnaire2Screen';
 import Questionnaire3Screen from './src/screens/Questionnaire3Screen';
 import Questionnaire4Screen from './src/screens/Questionnaire4Screen';
 import { OnboardingProvider } from './src/context/OnboardingContext';
+import WelcomeScreen from './src/screens/WelcomeScreen';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -72,6 +73,7 @@ function Root() {
           <Stack.Screen name="Questionnaire2" component={Questionnaire2Screen} />
           <Stack.Screen name="Questionnaire3" component={Questionnaire3Screen} />
           <Stack.Screen name="Questionnaire4" component={Questionnaire4Screen} />
+          <Stack.Screen name="Welcome" component={WelcomeScreen} />
         </Stack.Navigator>
       </OnboardingProvider>
     </NavigationContainer>
