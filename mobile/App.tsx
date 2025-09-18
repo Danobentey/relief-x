@@ -9,6 +9,12 @@ import * as SplashScreen from 'expo-splash-screen';
 import { NavigationContainer, DefaultTheme as NavLightTheme, DarkTheme as NavDarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import PaywallScreen from './src/screens/PaywallScreen';
+import PainSelectionScreen from './src/screens/PainSelectionScreen';
+import Questionnaire1Screen from './src/screens/Questionnaire1Screen';
+import Questionnaire2Screen from './src/screens/Questionnaire2Screen';
+import Questionnaire3Screen from './src/screens/Questionnaire3Screen';
+import Questionnaire4Screen from './src/screens/Questionnaire4Screen';
+import { OnboardingProvider } from './src/context/OnboardingContext';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -57,10 +63,17 @@ function Root() {
   const navTheme = theme.colors.background === '#0E1112' ? NavDarkTheme : NavLightTheme;
   return (
     <NavigationContainer theme={navTheme}> 
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Auth" component={AuthScreen} />
-        <Stack.Screen name="Paywall" component={PaywallScreen} />
-      </Stack.Navigator>
+      <OnboardingProvider>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Auth" component={AuthScreen} />
+          <Stack.Screen name="Paywall" component={PaywallScreen} />
+          <Stack.Screen name="PainSelection" component={PainSelectionScreen} />
+          <Stack.Screen name="Questionnaire1" component={Questionnaire1Screen} />
+          <Stack.Screen name="Questionnaire2" component={Questionnaire2Screen} />
+          <Stack.Screen name="Questionnaire3" component={Questionnaire3Screen} />
+          <Stack.Screen name="Questionnaire4" component={Questionnaire4Screen} />
+        </Stack.Navigator>
+      </OnboardingProvider>
     </NavigationContainer>
   );
 }
